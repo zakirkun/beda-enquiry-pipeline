@@ -1,0 +1,29 @@
+{
+  "_comment": "Routing policy as data (docs/04-ARCHITECTURE.md §8). Ops edits this file or the routing_rule table; no deploy and no prompt change needed. Lower priority wins.",
+  "routing_rules": [
+    {
+      "name": "high-value-sales",
+      "when": { "enquiry_type": "sales", "urgency": "high" },
+      "target_team": "enterprise-sales",
+      "priority": 1
+    },
+    {
+      "name": "general-sales",
+      "when": { "enquiry_type": "sales" },
+      "target_team": "sales-inbound",
+      "priority": 10
+    },
+    {
+      "name": "urgent-support",
+      "when": { "enquiry_type": "support", "urgency": "high" },
+      "target_team": "support-l1",
+      "priority": 5
+    },
+    {
+      "name": "support-default",
+      "when": { "enquiry_type": "support" },
+      "target_team": "support-l1",
+      "priority": 10
+    }
+  ]
+}

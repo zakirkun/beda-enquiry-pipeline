@@ -1,0 +1,11 @@
+# Secrets: never commit real values. Copy to .env and fill in.
+.env
+.env.*
+!.env.example
+
+# Build output
+/api
+/api.exe
+dashboard/node_modules/
+dashboard/.next/
+dashboard/next-env.d.ts

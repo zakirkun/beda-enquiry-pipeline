@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: beda
+      POSTGRES_PASSWORD: beda
+      POSTGRES_DB: beda
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U beda -d beda"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: .
+    depends_on:
+      postgres: { condition: service_healthy }
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://beda:beda@postgres:5432/beda?sslmode=disable
+      HTTP_ADDR: ":8080"
+      DASHBOARD_ORIGIN: http://localhost:3000
+      # Secrets come from the environment / .env, never from this file and never
+      # baked into the image (docs/04-ARCHITECTURE.md §5).
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:?set WEBHOOK_SECRET in .env}
+      # Provider keys and TIER*_PROVIDER / TIER*_MODEL come from .env via env_file.
+      # Not listed here: which keys are required depends on which providers the
+      # tiers name, so the app validates that pairing (internal/config) instead of
+      # compose guarding a key a single-vendor setup would never use.
+      CONFIDENCE_THRESHOLD: ${CONFIDENCE_THRESHOLD:-0.72}
+    ports: ["8080:8080"]
+
+  dashboard:
+    build: ./dashboard
+    depends_on: [api]
+    env_file:
+      - .env
+    environment:
+      # Read by the browser, so it must be the host-visible URL, not the compose
+      # service name.
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+    ports: ["3000:3000"]
+
+volumes:
+  pgdata:
